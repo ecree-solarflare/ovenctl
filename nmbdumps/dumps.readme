@@ -1,0 +1,16 @@
+The .dump files are memory dumps of the MB1's memory from 0x0000 to 0x1fff.  MBER denotes that a modbus error was encountered reading that word (typically 'parameter value out of range'); TIME denotes that communication timed out (typically because the modbus remote got confused).
+The .hex files simply exclude those lines which contain only MBERs and TIMEs.
+
+The dumps are as follows:
+    closed.*
+        Door closed and oven in Idle mode
+    open.*
+        Door open, oven in Idle mode
+    active.*
+        Door closed and oven active (in Manual mode)
+    limit.*
+        Door closed, oven active, and alarm "TEMPERATURE LIMIT" triggered
+
+Usual procedure to generate .dump and .hex files:
+    ../tools/nmbdump <remote> -a0 -l2000 > <name>.dump 2>/dev/null &
+	grep " [[:xdigit:]]\{4\}" <name>.dump > <name>.hex

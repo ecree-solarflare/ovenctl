@@ -1,0 +1,6 @@
+nmbtest
+nmbdump
+*.o
+*.pyc
+record
+*.csv

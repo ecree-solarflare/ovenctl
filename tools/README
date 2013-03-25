@@ -1,0 +1,28 @@
+nmbtest:
+	This allows you to get & set individual words on the remote device.
+	./nmbtest <remote> -a<addr> [-w<val>] [-v]
+	<remote> may be hostname or IP address.
+	<addr> and <val> are in hex.
+	-v selects Verbose mode (A transcript of all TCP traffic is produced)
+	E.g. to read from 0x22D0: ./nmbtest -a22d0
+	E.g. to write 0x0064 to 0x9ef0: ./nmbtest -a9ef0 -w64
+	./nmbtest -h
+	Produces short help.
+	Return value:
+		0	OK
+		1	MODBus error
+		2	Bad commandline
+		3	Socket error
+		255	Function not supported
+
+nmbdump:
+	This allows you to dump a section of the remote device memory.  (Handy for reverse-engineering & discovering the addresses of undocumented registers)
+	./nmbdump <remote> -a<addr> -l<length> [-v]
+	<remote> may be hostname or IP address.
+	<addr> and <length> are in hex.
+	Note that the dump data, <addr> and <length> are all in words, not bytes.
+	-v selects Verbose mode (A transcript of all TCP traffic is produced)
+	Typical usage:
+		./nmbdump <remote> -a0 -l2000 > <name>.dump 2>/dev/null &
+		grep " [[:xdigit:]]\{4\}" <name>.dump > <name>.hex
+		diff -u <name>.hex <other>.hex | less

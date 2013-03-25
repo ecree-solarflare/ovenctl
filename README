@@ -1,0 +1,9 @@
+ovenctl is a tool to remotely control a BINDER oven equipped with an MB1 controller and an XPort-03 TCP/IP connection.
+
+ovenctl.py:
+    Send one-shot commands to an oven
+    See the --help output and the docstrings (in Python, import ovenctl, help(ovenctl))
+
+TODOcument: rampspec, ramptool
+
+For reverse-engineering tools see the tools/ directory.

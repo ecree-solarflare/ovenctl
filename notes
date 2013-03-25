@@ -1,0 +1,23 @@
+Notes on oven protocol bobbles and other useful things found out
+
+The CRC16 checksum is sent little-endian (unlike everything else in the protocol which is big-endian)
+The oven's lag time is several minutes; if you switch to Idle Mode whilst heating it can gain several more degrees Celsius as the internal heat diffuses.
+The XPort-03 TCP/IP adaptor will only accept one connection at a time.  Thus you should not time.sleep() with a socket left open, else no-one else will be able to talk to the oven.
+"Track read" (0x1081) and "Track manual" (0x158b) are the 'operation lines'; bit 0 is "bedew protection" (man. secn 10), other lines are not used in the MK-range oven.
+Of the operating modes, 'Basic' appears to be for control by APT-COM3.  However, I encountered difficulties with ovenctl when trying to drive the oven in Basic mode, as the mode would set itself back to 0 (idle) - though this may have been caused by APT-COM3 running at the same time.  Instead I ended up using Manual mode.  There are two writable setpoints (for Manual and Basic), and in Idle mode the Basic setpoint is returned to the readonly setpoint register.  Thus in ovenctl I found it expedient to set both writable setpoint registers, ensuring that the readonly setpoint register would return our setpoint regardless of mode.
+The over-temperature safety device class 2 (man. secn 11.2) limit temperature appears to be available at 0x1a5b.  However beware that this may also be used for the offset (Setpoint type 'Offset', see man. secn 11.2).  Also, writing to this address doesn't seem to have the expected effect (eg. writing 45 then bringing oven temp. up to 50 doesn't cause an alarm) - it appears that there is a separate register (perhaps not in MB1 memory but onboard the safety controller) which is only updated when using the menu.
+0x10d4 appears to change from 0x0000 to 0x0001 when unit is in an active mode (or perhaps when heater is running)
+	0x1116, 0x1143 and 0x1170 changed from 0x4000 to 0x6000 in same circumstances
+
+Alarms & Notes:
+	0x10db changed from 0x0000 to 0x0001 when I created a "TEMPERATURE LIMIT" alarm.  (but *not* on "DOOR OPEN" note)
+		0x123d changed from 0x0000 to 0x0001 on same alarm.
+	0x123e changed from 0x0000 to 0x0001 on note "DOOR OPEN".
+	The 'door open' state is available at 0x1007 (bit 0).
+	The alarm/note text is at 0x1228 (0x14 words), padded with spaces, and stored one byte to a word.  During normal operation this is filled with spaces.
+	HYPOTHESIS: 0x123d is "alarm", 0x123e is "note".  This is supported by their proximity to alarm/note text.
+
+Undocumented addresses were found with a tool 'nmbdump' (which simply dumps a section of remote memory) followed by grep, diff &c. on dumps produced under varying conditions.  See the 'nmbdumps' directory.
+
+Selecting a temperature close to room temperature (eg. 25°C) causes very slow settling.  Perhaps the fridge is running as well as the heater?
+Selecting a temperature of precisely 0°C causes very slow settling, whereas ±1°C is much faster.  Perhaps the controller has a bug...?
