@@ -169,8 +169,9 @@ class RampCtl:
                 self.oven.set_mode_active(force=True)
         elif action.act == 'I':
             if self.new_action:
-                self.old_setpoint = self.oven.get_temp()
                 self.oven.set_mode_idle()
+            if finished:
+                self.old_setpoint = self.oven.get_temp()
         elif action.act == 'J':
             jump_to = action['j']
         elif action.act == 'R':
