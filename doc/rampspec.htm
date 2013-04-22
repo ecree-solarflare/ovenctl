@@ -52,7 +52,7 @@ dd {margin-top:1ex;}
 <hr />
 
 <h2 id="s1"><span class="ordinal">1 -</span> Shortcut: <tt>ramptool</tt> <a href="#toc">(back)</a></h2>
-<p>For really simple profiles (like, "go down to 10°C, hold for an hour, go back up"), you can use ramptool to generate the profile with execs ('X's) at periodic intervals.  For help run <tt>./ramptool.py -h</tt>.</p>
+<p>For really simple profiles (like, "go down to 10°C, hold for an hour, go back up"), you can use ramptool to generate the profile with <a href="#s4.6">Execute (<span class="rampspec">X</span>) actions</a> at periodic intervals.  For help run <tt>./ramptool.py -h</tt>.</p>
 <p>You can then use `backticks` to insert the ramptool command into the rampspec commandline.</p>
 <p>Note that the profile will last longer than expected due to the execs (ramping does not run concurrently with execs), unless you pass ramptool <tt>-x/--xdur</tt> (length of exec in minutes) so that it can allow for this.  To measure xdur for an exec, run a profile of '<span class="rampspec">X;I</span>' with that exec, and measure the time from <span class="output">"Started action: X"</span> to <span class="output">"Started action: I"</span>.</p>
 
