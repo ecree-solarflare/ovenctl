@@ -9,7 +9,7 @@ def MacroRepeat(args, text):
     count = int(args)
     return count*text
 
-RSActionArgumentTable = (('H', ('c', 'd', 's', 't')), ('I', ('t',)), ('J', ('j',)), ('R', ('c', 'd', 'r', 's', 't')), ('W', ('c', 'd', 'l', 's', 't', 'z')), ('X', ('j', 't')))
+RSActionArgumentTable = (('H', ('c', 'd', 's', 't')), ('I', ('t',)), ('J', ('j',)), ('R', ('c', 'd', 'r', 's', 't')), ('W', ('c', 'd', 'l', 's', 't', 'z')), ('X', ('j',)))
 RSActionEnum = tuple(rsaa[0] for rsaa in RSActionArgumentTable)
 RSArgumentTypes = (('c', "float"), ('d', "bool"), ('j', "int"), ('l', "float"), ('r', "float"), ('s', "float"), ('t', "float"), ('z', "int"))
 RSArgumentEnum = tuple(rsa[0] for rsa in RSArgumentTypes)
