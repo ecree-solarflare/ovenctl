@@ -9,6 +9,8 @@ q {font-style:italic;}
 .rampspec, .literal {font-weight:bold;}
 a[href="#toc"] {font-size:75%;}
 table.bare * {border:0;}
+dl {margin-bottom:1ex;}
+dd {margin-top:1ex;}
 </style>
 </head>
 <body>
@@ -77,34 +79,34 @@ table.bare * {border:0;}
 <p>These macros can be nested, and are evaluated from the middle outwards.  Thus <span class="rampspec">[[2#1]#I;]</span> expands to <span class="rampspec">[11#I;]</span> and thence to <span class="rampspec">I;I;I;I;I;I;I;I;I;I;I;</span>.</p>
 <p>The pre-processor is blind to the syntax of the actual language; it doesn't tokenise at all, it just treats it as an arbitrary character string.</p>
 
-<h3 id="s3.1"><span class="ordinal">3.1 -</span> <span class="rampspec">#</span>: Repeat <a href="#toc">(back)</a></h3>
+<h3 id="s3.1"><span class="ordinal">3.i -</span> <span class="rampspec">#</span>: Repeat <a href="#toc">(back)</a></h3>
 <p>The <span class="rampspec">#</span> macro takes a single integer argument <em>n</em> and expands to &lt;text&gt; repeated <em>n</em> times.</p>
 
 <h2 id="s4"><span class="ordinal">4 -</span> Actions <a href="#toc">(back)</a></h2>
 <p><em>Actions</em> can be thought of in two ways.  They are instructions to send to the oven; they are also stereotyped pieces of temperature-versus-time curve.  (The <a href="#s4.3">jump (<span class="rampspec">J</span>)</a> and <a href="#s4.6">execute (<span class="rampspec">X</span>)</a> actions are exceptions that don't really fit either of these definitions.)</p>
 <p>The following subsections detail each individual action.</p>
 
-<h3 id="s4.1"><span class="ordinal">4.1 -</span> <span class="rampspec">H</span>: Hold <a href="#toc">(back)</a></h3>
+<h3 id="s4.1"><span class="ordinal">4.i -</span> <span class="rampspec">H</span>: Hold <a href="#toc">(back)</a></h3>
 <p>The <em>Hold</em> action sets a specified setpoint, and holds it for a given time.  It represents a horizontal line on the temperature-versus-time graph.</p>
 <p>It takes the following arguments: <a href="#s5.1">change</a>, <a href="#s5.2">dry</a>, <a href="#s5.6">setpoint</a>, <a href="#s5.7">time</a>.</p>
 <p>Without arguments, it is equivalent to <span class="rampspec">Hc0,t0</span>, which puts the oven into Active mode at the previous setpoint.</p>
 
-<h3 id="s4.2"><span class="ordinal">4.2 -</span> <span class="rampspec">I</span>: Idle <a href="#toc">(back)</a></h3>
+<h3 id="s4.2"><span class="ordinal">4.ii -</span> <span class="rampspec">I</span>: Idle <a href="#toc">(back)</a></h3>
 <p>The <em>Idle</em> action puts the oven into Idle mode for the specified duration.  At the end of this time, the 'previous setpoint' is set to the current <em>measured</em> temperature of the oven chamber.  After a reasonably long idle period, this will approximate ambient temperature.  For this reason, most rampspecs will start with <span class="rampspec">I;</span>.  Most will also end with <span class="rampspec">I</span> in order to leave the oven idle when finished.</p>
 <p>This action takes the following argument: <a href="#s5.7">time</a>.</p>
 <p>Without arguments, it is equivalent to <span class="rampspec">It0</span>, which puts the oven into Idle mode and reads the current temperature.</p>
 
-<h3 id="s4.3"><span class="ordinal">4.3 -</span> <span class="rampspec">J</span>: Jump <a href="#toc">(back)</a></h3>
+<h3 id="s4.3"><span class="ordinal">4.iii -</span> <span class="rampspec">J</span>: Jump <a href="#toc">(back)</a></h3>
 <p>The <em>Jump</em> action makes an unconditional jump to a label.  Jumps can only go forwards (ie. looping is not possible).</p>
 <p>This action takes only one argument, <a href="#s5.3">jump</a>, which cannot be omitted.</p>
 
-<h3 id="s4.4"><span class="ordinal">4.4 -</span> <span class="rampspec">R</span>: Ramp <a href="#toc">(back)</a></h3>
+<h3 id="s4.4"><span class="ordinal">4.iv -</span> <span class="rampspec">R</span>: Ramp <a href="#toc">(back)</a></h3>
 <p>The <em>Ramp</em> action linearly ramps the setpoint to a new value at a specified rate (or over a specified time).  It represents a sloping line on the temperature-versus-time graph.</p>
 <p>It takes the following arguments: <a href="#s5.1">change</a>, <a href="#s5.2">dry</a>, <a href="#s5.5">rate</a>, <a href="#s5.6">setpoint</a>, <a href="#s5.7">time</a>.</p>
 <p>At least one of <a href="#s5.5">rate</a> and <a href="#s5.7">time</a> must be specified.  Using both has the semantics of &quot;whichever is slower&quot;.</p>
 <!-- Rcrt is allowed even though it's pointless (since either the r or the t will have no effect). -->
 
-<h3 id="s4.5"><span class="ordinal">4.5 -</span> <span class="rampspec">W</span>: Wait <a href="#toc">(back)</a></h3>
+<h3 id="s4.5"><span class="ordinal">4.v -</span> <span class="rampspec">W</span>: Wait <a href="#toc">(back)</a></h3>
 <p>The <em>Wait</em> action sets a specified setpoint and then waits for it to be reached.  The definition of 'reached' depends on the arguments.</p>
 <p>This action takes the following arguments: <a href="#s5.1">change</a>, <a href="#s5.2">dry</a>, <a href="#s5.4">limit</a>, <a href="#s5.6">setpoint</a>, <a href="#s5.7">time</a>, <a href="#s5.8">stabilise</a>.</p>
 <p><em>Wait</em> without <a href="#s5.4">limit</a> will wait for the temperature to cross the setpoint, assuming the temperature to be continuous and thus subject to the initial value theorem.</p>
@@ -112,7 +114,7 @@ table.bare * {border:0;}
 <p>The <a href="#s5.7">time</a> argument for <em>Wait</em> is a timeout (maximum time to wait) rather than a duration.</p>
 <p>To get the equivalent of OvenCtl 'acclimatise' on <em>Wait</em>, use <a href="#s5.8">stabilise</a>; it's in 3-second units, so <span class="rampspec">z100</span> for the standard 5 minutes.  Alternatively, you can use <a href="#s4.1">Hold</a> with an appropriate <a href="#s5.7">time</a>.</p>
 
-<h3 id="s4.6"><span class="ordinal">4.6 -</span> <span class="rampspec">X</span>: Execute <a href="#toc">(back)</a></h3>
+<h3 id="s4.6"><span class="ordinal">4.vi -</span> <span class="rampspec">X</span>: Execute <a href="#toc">(back)</a></h3>
 <p>The <em>Execute</em> action runs whatever execution callback was passed to the RampCtl object.  When rampspec.py is run as a script, this does nothing.</p>
 <p>This action takes the following argument: <a href="#s5.3">jump</a>.</p>
 <p>The <a href="#s5.3">jump</a> is conditional: it will only be taken if the callback returns failure.</p>
@@ -122,38 +124,41 @@ table.bare * {border:0;}
 <p><em>Arguments</em> have a defined type, either int, float or boolean.  In the boolean case, the &lt;value&gt; part is an empty string; the argument is True if present and False if absent.</p>
 <p>The following subsections detail each individual argument.</p>
 
-<h3 id="s5.1"><span class="ordinal">5.1 -</span> <span class="rampspec">c</span>: change <a href="#toc">(back)</a></h3>
+<h3 id="s5.1"><span class="ordinal">5.i -</span> <span class="rampspec">c</span>: change <a href="#toc">(back)</a></h3>
 <p>The <em>change</em> argument expresses the change in temperature setpoint, in Kelvins.  Its value is a float.</p>
 <p><em>change</em> cannot be combined with <a href="#s5.6">setpoint</a>.</p>
 
-<h3 id="s5.2"><span class="ordinal">5.2 -</span> <span class="rampspec">d</span>: dry <a href="#toc">(back)</a></h3>
+<h3 id="s5.2"><span class="ordinal">5.ii -</span> <span class="rampspec">d</span>: dry <a href="#toc">(back)</a></h3>
 <p>The <em>dry</em> argument controls 'bedew protection' (that is, condensation prevention), as described in chapter 10 of the BINDER MK03 manual.  It is of boolean type.</p>
 
-<h3 id="s5.3"><span class="ordinal">5.3 -</span> <span class="rampspec">j</span>: jump <a href="#toc">(back)</a></h3>
+<h3 id="s5.3"><span class="ordinal">5.iii -</span> <span class="rampspec">j</span>: jump <a href="#toc">(back)</a></h3>
 <p>The <em>jump</em> argument gives a label to jump to (possibly conditionally).  Its value is an int.</p>
 <p>The execution model for a jump is simply to skip actions until reaching one with the correct label number, then continue as normal.  Thus, jumps can only go forwards, never backwards.  Moreover, labels need not be unique; and if you jump to a nonexistent label number, the profile will end.</p>
 
-<h3 id="s5.4"><span class="ordinal">5.4 -</span> <span class="rampspec">l</span>: limit <a href="#toc">(back)</a></h3>
+<h3 id="s5.4"><span class="ordinal">5.iv -</span> <span class="rampspec">l</span>: limit <a href="#toc">(back)</a></h3>
 <p>The <em>limit</em> argument controls the tolerance when determining whether a temperature has been reached.  That is, the oven is considered to have reached the setpoint if its current temperature is within <em>limit</em> Kelvins of the setpoint.  Its value is a float.</p>
 
-<h3 id="s5.5"><span class="ordinal">5.5 -</span> <span class="rampspec">r</span>: rate <a href="#toc">(back)</a></h3>
+<h3 id="s5.5"><span class="ordinal">5.v -</span> <span class="rampspec">r</span>: rate <a href="#toc">(back)</a></h3>
 <p>The <em>rate</em> argument sets the rate, in Kelvins per hour, at which the temperature setpoint is ramped.  Its value is a float.</p>
 <p>The rate is unsigned; ie. it should be positive even when the temperature change is negative.</p>
 
-<h3 id="s5.6"><span class="ordinal">5.6 -</span> <span class="rampspec">s</span>: setpoint <a href="#toc">(back)</a></h3>
+<h3 id="s5.6"><span class="ordinal">5.vi -</span> <span class="rampspec">s</span>: setpoint <a href="#toc">(back)</a></h3>
 <p>The <em>setpoint</em> argument sets the oven temperature setpoint, in °C.  Its value is a float.</p>
 <p><em>setpoint</em> cannot be combined with <a href="#s5.1">change</a>.</p>
 
-<h3 id="s5.7"><span class="ordinal">5.7 -</span> <span class="rampspec">t</span>: time <a href="#toc">(back)</a></h3>
+<h3 id="s5.7"><span class="ordinal">5.vii -</span> <span class="rampspec">t</span>: time <a href="#toc">(back)</a></h3>
 <p>The <em>time</em> argument sets the duration of an action (or, in the case of <a href="#s4.5">Wait</a>, the timeout), in hours.  Its value is a float.</p>
 
-<h3 id="s5.8"><span class="ordinal">5.8 -</span> <span class="rampspec">z</span>: stabilise <a href="#toc">(back)</a></h3>
+<h3 id="s5.8"><span class="ordinal">5.viii -</span> <span class="rampspec">z</span>: stabilise <a href="#toc">(back)</a></h3>
 <p>The <em>stabilise</em> argument sets the number of consecutive 'near enough' readings required for <a href="#s4.5">Wait</a> to finish (similar to OvenCtl's -S option).  Its value is an int.</p>
 <p>The choice of <span class="rampspec">z</span> is a little odd, but <a href="#s5.6"><span class="rampspec">s</span></a> was already taken and nothing else seemed obvious.</p>
 
-<!--
-=== Examples ===
-"ambient to 55 at 10C per hour, hold for 24 hours, 55C to ambient at 10C per hour" becomes {{{I;Rs55,r10;Ht24;Rs25,r10;I}}}
--->
+<h2 id="s6"><span class="ordinal">6 -</span> Examples <a href="#toc">(back)</a></h2>
+<dl>
+  <dd class="rampspec">I;Rs55,r10;Ht24;Rs25,r10;I</dd>
+    <dt>Ambient to 55°C at 10K/hr per hour, hold for 24 hours, 55°C to ambient at 10K/hr, return to Idle mode.</dt>
+  <dd class="rampspec">Ws20,l1,z6;[5#Xj1;Rc10,r10;Wl1,z6;]Xj1;Jj0;1:Rc-5,r10;Wl1,z6;X;0:I</dd>
+    <dt>From 20°C up in 10K / 1hr steps to 70°C, unless a callback fails in which case back off by 5K and run another callback.  Return to Idle mode when done.</dt>
+</dl>
 </body>
 </html>
