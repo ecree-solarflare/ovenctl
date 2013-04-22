@@ -3,7 +3,19 @@ ovenctl is a tool to remotely control a BINDER oven equipped with an MB1 control
 ovenctl.py:
     Send one-shot commands to an oven
     See the --help output and the docstrings (in Python, import ovenctl, help(ovenctl))
+    Quick reference:
+        ./ovenctl.py -H <hostname> -Q # query
+        ./ovenctl.py -H <hostname> -T <temp> # turn on
+        ./ovenctl.py -H <hostname> -T <temp> -W # turn on and wait for temp to be reached
+        ./ovenctl.py -H <hostname> -I # turn off ('i'dle)
 
-TODOcument: rampspec, ramptool
+rampspec.py:
+    Drive an oven through a temperature profile consisting of a chain of canned elements
+    See the --help output for basic usage info
+    See doc/rampspec.htm for details of the 'rampspec' format for defining the temperature profile
+
+ramptool.py:
+    Generate canned rampspecs for simple profiles with repeated eXecs
+    See the --help output for usage info, doc/rampspec.htm for explanation
 
 For reverse-engineering tools see the tools/ directory.

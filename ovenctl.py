@@ -829,13 +829,13 @@ class OvenCtl(object):
             ModbusException: trouble at t' mill
         
         Note: This method calls time.sleep and thus won't play nicely with
-        Twisted"""
+        async frameworks like Twisted; for those use temp_ready_tester"""
         tester = self.temp_ready_tester(limit, stabilise, acclimatise)
         while True:
             tester = tester()
             if tester is None:
                 return
-            time.sleep(10) # XXX this won't play nicely with Twisted
+            time.sleep(10)
 
 def parse_cmdline():
     parser = optparse.OptionParser()
