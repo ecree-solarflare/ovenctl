@@ -6,7 +6,7 @@
 <style>
 q {font-style:italic;}
 .ordinal, .output, .rampspec {font-family:monospace;}
-.rampspec {font-weight:400;}
+.rampspec, .literal {font-weight:bold;}
 a[href="#toc"] {font-size:75%;}
 table.bare * {border:0;}
 </style>
@@ -46,60 +46,77 @@ table.bare * {border:0;}
     </ol>
   </li>
   <li><a href="#s6">Examples</a></li>
-  <li><a href="#s7">Notes</a></li>
 </ol>
 <hr />
 
 <h2 id="s1"><span class="ordinal">1 -</span> Shortcut: <tt>ramptool</tt> <a href="#toc">(back)</a></h2>
 <p>For really simple profiles (like, "go down to 10°C, hold for an hour, go back up"), you can use ramptool to generate the profile with execs ('X's) at periodic intervals.  For help run <tt>./ramptool.py -h</tt>.</p>
 <p>You can then use `backticks` to insert the ramptool command into the rampspec commandline.</p>
-<p>Note that the profile will last longer than expected due to the execs (ramping does not run concurrently with execs), unless you pass ramptool <tt>-x/--xdur</tt> (length of exec in minutes) so that it can allow for this.  To measure xdur for an exec, run a profile of <span class="rampspec">'X;I'</span> with that exec, and measure the time from <span class="output">"Started action: X"</span> to <span class="output">"Started action: I"</span>.</p>
+<p>Note that the profile will last longer than expected due to the execs (ramping does not run concurrently with execs), unless you pass ramptool <tt>-x/--xdur</tt> (length of exec in minutes) so that it can allow for this.  To measure xdur for an exec, run a profile of '<span class="rampspec">X;I</span>' with that exec, and measure the time from <span class="output">"Started action: X"</span> to <span class="output">"Started action: I"</span>.</p>
 
 <h2 id="s2"><span class="ordinal">2 -</span> Syntax overview <a href="#toc">(back)</a></h2>
 <p>A rampspec (after <a href="#s3">pre-processing</a>) consists of a list of <a href="#s4">actions</a>, each of which has a list of <a href="#s5">arguments</a> and optionally a label (an integer, used as the target for a jump).</p>
 <p>Here is the syntax, in <acronym title="extended Backus-Naur form">EBNF</a>:</p>
 <table class="bare">
-<tr><td>&lt;rampspec&gt;</td><td>::=</td><td>&lt;action&gt; | &lt;rampspec&gt; ';' &lt;action&gt;</td></tr>
+<tr><td>&lt;rampspec&gt;</td><td>::=</td><td>&lt;action&gt; | &lt;rampspec&gt; <span class="literal">;</span> &lt;action&gt;</td></tr>
 <tr><td>&lt;action&gt;</td><td>::=</td><td>&lt;label&gt;? &lt;act&gt; &lt;arglist&gt;?</td></tr>
-<tr><td>&lt;label&gt;</td><td>::=</td><td>&lt;int&gt; ':'</td></tr>
+<tr><td>&lt;label&gt;</td><td>::=</td><td>&lt;int&gt; <span class="literal">:</span></td></tr>
 <tr><td>&lt;int&gt;</td><td>::=</td><td>&lt;digit&gt; &lt;int&gt;?</td></tr>
 <tr><td>&lt;act&gt;</td><td>::=</td><td>&lt;upper&gt;</td></tr>
-<tr><td>&lt;arglist&gt;</td><td>::=</td><td>&lt;argument&gt; | &lt;arglist&gt; ',' &lt;argument&gt;</td></tr>
+<tr><td>&lt;arglist&gt;</td><td>::=</td><td>&lt;argument&gt; | &lt;arglist&gt; <span class="literal">,</span> &lt;argument&gt;</td></tr>
 <tr><td>&lt;argument&gt;</td><td>::=</td><td>&lt;lower&gt; &lt;value&gt;</td></tr>
-<tr><td>&lt;value&gt;</td><td>::=</td><td>&lt;no-comma&gt; | &lt;value&gt; &lt;no-comma&gt;</td></tr>
-<tr><td>&lt;no-comma&gt;</td><td>::=</td><td>any character except ','</td></tr>
+<tr><td>&lt;value&gt;</td><td>::=</td><td>&lt;no-punct&gt; | &lt;value&gt; &lt;no-punct&gt;</td></tr>
+<tr><td>&lt;no-punct&gt;</td><td>::=</td><td>any character except <span class="literal">,</span> <span class="literal">;</span> <span class="literal">:</span></td></tr>
 </table>
-<p>While the value of an argument is defined as a &lt;no-comma&gt;, in practice all arguments currently take an int, a float, or (in the case of booleans) no explicit value.</p>
+<p>While the value of an argument is defined as a &lt;no-punct&gt;, in practice all arguments currently take an int, a float, or (in the case of booleans) no explicit value.</p>
+
+<h2 id="s3"><span class="ordinal">3 -</span> Pre-processor <a href="#toc">(back)</a></h2>
+<p>Before parsing, the rampspec string is passed through a simple pre-processor.  Directives to this pre-processor are introduced with square brackets (<span class="literal">[</span>), and overall are formed as follows:</p>
+<p><span class="literal">[</span> &lt;arglist&gt;? &lt;macroname&gt; &lt;text&gt; <span class="literal">]</span></p>
+<p>Wherein: &lt;text&gt; contains no <span class="literal">[</span> or <span class="literal">]</span>, &lt;arglist&gt; is a comma-separated list of arguments (each containing no <span class="literal">[</span>, <span class="literal">]</span> or <span class="literal">,</span>, nor any &lt;macroname&gt;s), and &lt;macroname&gt; is one of the macros defined below.</p>
+<p>These macros can be nested, and are evaluated from the middle outwards.  Thus <span class="rampspec">[[2#1]#I;]</span> expands to <span class="rampspec">[11#I;]</span> and thence to <span class="rampspec">I;I;I;I;I;I;I;I;I;I;I;</span>.</p>
+<p>The pre-processor is blind to the syntax of the actual language; it doesn't tokenise at all, it just treats it as an arbitrary character string.</p>
+
+<h3 id="s3.1"><span class="ordinal">3.1 -</span> <span class="rampspec">#</span>: Repeat <a href="#toc">(back)</a></h3>
+<p>The <span class="rampspec">#</span> macro takes a single integer argument <em>n</em> and expands to &lt;text&gt; repeated <em>n</em> times.</p>
+
+<h2 id="s4"><span class="ordinal">4 -</span> Actions <a href="#toc">(back)</a></h2>
+<p><em>Actions</em> can be thought of in two ways.  They are instructions to send to the oven; they are also stereotyped pieces of temperature-versus-time curve.  (The <a href="#s4.3">jump (<span class="rampspec">J</span>)</a> and <a href="#s4.6">execute (<span class="rampspec">X</span>)</a> actions are exceptions that don't really fit either of these definitions.)</p>
+<p>The following subsections detail each individual action.</p><!--cdjlrstz-->
+
+<h3 id="s4.1"><span class="ordinal">4.1 -</span> <span class="rampspec">H</span>: Hold <a href="#toc">(back)</a></h3>
+<p>The <em>Hold</em> action sets a specified setpoint, and holds it for a given time.  It represents a horizontal line on the temperature-versus-time graph.</p>
+<p>It takes the following arguments: <a href="#s5.1">change</a>, <a href="#s5.2">dry</a>, <a href="#s5.6">setpoint</a>, <a href="#s5.7">time</a>.</p>
+<p>Without arguments, it is equivalent to <span class="rampspec">Hc0,t0</span>, which puts the oven into Active mode at the previous setpoint.</p>
+
+<h3 id="s4.2"><span class="ordinal">4.2 -</span> <span class="rampspec">I</span>: Idle <a href="#toc">(back)</a></h3>
+<p>The <em>Idle</em> action puts the oven into Idle mode for the specified duration.  At the end of this time, the 'previous setpoint' is set to the current <em>measured</em> temperature of the oven chamber.  After a reasonably long idle period, this will approximate ambient temperature.  For this reason, most rampspecs will start with <span class="rampspec">I;</span>.  Most will also end with <span class="rampspec">I</span> in order to leave the oven idle when finished.</p>
+<p>This action takes the following argument: <a href="#s5.7">time</a>.</p>
+<p>Without arguments, it is equivalent to <span class="rampspec">It0</span>, which puts the oven into Idle mode and reads the current temperature.</p>
+
+<h3 id="s4.3"><span class="ordinal">4.3 -</span> <span class="rampspec">J</span>: Jump <a href="#toc">(back)</a></h3>
+<p>The <em>Jump</em> action makes an unconditional jump to a label.  Jumps can only go forwards (ie. looping is not possible).</p>
+<p>This action takes only one argument, <a href="#s5.3">jump</a>, which cannot be omitted.</p>
+
+<h3 id="s4.4"><span class="ordinal">4.4 -</span> <span class="rampspec">R</span>: Ramp <a href="#toc">(back)</a></h3>
+<p>The <em>Ramp</em> action linearly ramps the setpoint to a new value at a specified rate (or over a specified time).  It represents a sloping line on the temperature-versus-time graph.</p>
+<p>It takes the following arguments: <a href="#s5.1">change</a>, <a href="#s5.2">dry</a>, <a href="#s5.5">rate</a>, <a href="#s5.6">setpoint</a>, <a href="#s5.7">time</a>.</p>
+<p>At least one of <a href="#s5.5">rate</a> and <a href="#s5.7">time</a> must be specified.  Using both has the semantics of &quot;whichever is slower&quot;.</p>
+
+<h3 id="s4.5"><span class="ordinal">4.5 -</span> <span class="rampspec">W</span>: Wait <a href="#toc">(back)</a></h3>
+<p>The <em>Wait</em> action sets a specified setpoint and then waits for it to be reached.  The definition of 'reached' depends on the arguments.</p>
+<p>This action takes the following arguments: <a href="#s5.1">change</a>, <a href="#s5.2">dry</a>, <a href="#5.4">limit</a>, <a href="#s5.6">setpoint</a>, <a href="#s5.7">time</a>, <a href="#s5.8">stabilise</a>.</p>
+<p>Wait without <a href="#5.4">limit</a> will wait for the temperature to cross the setpoint, assuming the temperature to be continuous and thus subject to the initial value theorem.</p>
+<p>Wait with <a href="#s5.8">stabilise</a> but no <a href="#5.4">limit</a> is forbidden (and the parser rejects it).</p>
+<p>The <a href="#s5.7">time</a> argument for Wait is a timeout (maximum time to wait) rather than a duration.</p>
+<p>To get the equivalent of OvenCtl 'acclimatise' on Wait, use <a href="#s5.8">stabilise</a>; it's in 3-second units, so <span class="rampspec">z100</span> for the standard 5 minutes.  Alternatively, you can use <a href="#s4.1">Hold</a> with an appropriate <a href="#s5.7">time</a>.</p>
+
+<h3 id="s4.6"><span class="ordinal">4.6 -</span> <span class="rampspec">X</span>: Execute <a href="#toc">(back)</a></h3>
+<p>The <em>Execute</em> action runs whatever execution callback was passed to the RampCtl object.  When rampspec.py is run as a script, this does nothing.</p>
+<p>This action takes the following argument: <a href="#s5.3">jump</a>.</p>
+<p>The <a href="#s5.3">jump</a> is conditional: it will only be taken if the callback returns failure.</p>
 
 <!--
-== Syntax of rampspec strings ==
-=== Pre-processor ===
-A pre-processing macro looks like {{{'[' <arglist>? <macroname> <text> ']'}}} where <text> contains no '[' or ']', <arglist> is a comma-separated list of arguments (each containing no '[', ']' or ',', nor any <macroname>s), and <macroname> is from the following:
-||Macro ||Arguments ||Description ||
-||# ||int n ||Repeats <text> n times ||
-
-
-
-
-These macros can be nested, and are evaluated from the middle outwards, so {{{[[2#1]#I;]}}} becomes {{{[11#I;]}}} becomes {{{I;I;I;I;I;I;I;I;I;I;I;}}} (though you ''really'' don't want to make numbers out of repeats like this, it'd be excessive cleverness; it just illustrates how the expansion works).
-
-The pre-processor is blind to the syntax of the actual language; it doesn't tokenise at all.
-
-
-
-
-The stereotyped elements, or ''actions'', are:
-||Action ||Mnemonic name ||Arguments ||Description ||
-||H ||Hold ||d,s,t ||Maintain a steady setpoint for a specified time ||
-||I ||Idle ||t ||Leave the oven in Idle Mode for a specified time ||
-||J ||Jump ||j ||Jumps forwards to the next action with label j ||
-||R ||Ramp ||d,r,s,t ||Linearly ramp the setpoint to a new value at a specified rate (or over a specified time) ||
-||W ||Wait ||d,l,s,t,z ||Set a new setpoint and wait for it to be reached ||
-||X ||Execute ||j,t ||Execute a test iteration with the specified timeout, jumping to j if test fails or times out ||
-
-
-
-
 The arguments are:
 ||Argument ||Mnemonic name ||Value type ||Description ||
 ||c ||change ||float ||Change in temperature setpoint, in Kelvin ||
@@ -113,17 +130,7 @@ The arguments are:
 
 
 
-
-==== Notes ====
- * After an '''I'''dle, the 'previous setpoint' for '''H'''olding and '''R'''amping is set to the measured ''actual temperature'' of the oven at the end of the idle period.  For reasonably long idling, this will approximate ambient temperature.
-  * For this reason, most rampspecs will start with {{{I;}}}
-  * Most will also end with {{{I}}} in order to leave the oven idle when finished.
- * '''W'''ait without '''l'''imit will wait for the temperature to cross the setpoint, assuming the temperature to be continuous and thus subject to the initial value theorem.
- * '''W'''ait with '''z''' (stabilise) but no '''l'''imit is forbidden (and the parser rejects it).
   * Yes, it's weird that stabilise is '''z''', but '''s''' was already taken and nothing else seemed obvious
- * To get the equivalent of OvenCtl 'acclimatise' on '''W'''ait, use '''z''' (stabilise) in 3-second units (so, {{{z100}}} for the standard 5 minutes).
-  * Alternatively (or after a '''R'''amp), you can use '''H'''old with an appropriate '''t'''ime.
- * For '''R'''amp you must use at least one of '''r'''ate and '''t'''ime.  Using both has the semantics of "whichever is slower".
  * '''R'''amp '''r'''ates are now ''non-directional''; they indicate the magnitude of the ramp rate.  rampspec will ramp in whichever direction it needs to to reach the new setpoint.
  * A boolean argument, such as '''d'''ry, has 'store_true' semantics; its <value> part is just an empty string.
  * If you '''j'''ump to a nonexistent label, the profile will end.
@@ -133,10 +140,10 @@ The arguments are:
   * Rcrt is allowed even though it's pointless (since either the r or the t will have no effect).
  * The test run by e'''X'''ecute is supplied as a callback parameter to RampSpec.prepare(); it should have the signature (data -> bool, data) where data is a further parameter which can be supplied to RampSpec.prepare().  The returned bool should be False for success and True for failure (typically you'll use an integer error code, 0 for success).
 
+
+
 === Examples ===
 "ambient to 55 at 10C per hour, hold for 24 hours, 55C to ambient at 10C per hour" becomes {{{I;Rs55,r10;Ht24;Rs25,r10;I}}}
-
-
 -->
 </body>
 </html>
