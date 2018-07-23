@@ -219,9 +219,10 @@ class ModbusErrorException(ModbusException):
             ecode: the error code enclosed in the message
             msgbytes: the full text of the message"""
         self.ecode=ecode
+        self.ename=MB_ENAMES.get(self.ecode, "Unknown error")
         self.msgbytes=msgbytes
     def __str__(self):
-        return "MODBus error code %d" % self.ecode
+        return "MODBus error code %d (%s)" % (self.ecode, self.ename)
 
 class ModbusBadResponseException(ModbusException):
     """Indicate that response parsing failed for unknown reasons
@@ -521,10 +522,6 @@ class OvenCtl(object):
                 resp += sock.recv(resp_len-len(resp))
                 iserr,e = parse_err_response(resp)
                 if iserr:
-                    try:
-                        name=MB_ENAMES[e]
-                    except IndexException:
-                        name="Unknown error"
                     raise ModbusErrorException(e, resp)
                 try:
                     data = parse_readn_response(resp)
@@ -552,10 +549,6 @@ class OvenCtl(object):
                 resp += sock.recv(resp_len-len(resp))
                 iserr,e = parse_err_response(resp)
                 if iserr:
-                    try:
-                        name=MB_ENAMES[e]
-                    except IndexException:
-                        name="Unknown error"
                     raise ModbusErrorException(e, resp)
                 try:
                     resp_addr, resp_data = parse_write_response(resp)
@@ -583,10 +576,6 @@ class OvenCtl(object):
                 resp += sock.recv(resp_len-len(resp))
                 iserr,e = parse_err_response(resp)
                 if iserr:
-                    try:
-                        name=MB_ENAMES[e]
-                    except IndexException:
-                        name="Unknown error"
                     raise ModbusErrorException(e, resp)
                 try:
                     resp_addr, resp_words = parse_writen_response(resp)
