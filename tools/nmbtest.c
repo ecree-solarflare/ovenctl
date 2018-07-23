@@ -380,14 +380,14 @@ int main(int argc, char *argv[])
 				{
 					if(awords<(floating?2:1))
 					{
-						fprintf(stderr, "Device only responded with %zu words, asked for %zu\n", awords, floating?2:1);
+						fprintf(stderr, "Device only responded with %zu words, asked for %d\n", awords, floating?2:1);
 						close(sockfd);
 						return(1);
 					}
 					else
 					{
 						if(awords>(floating?2:1))
-							fprintf(stderr, "Warning: device responded with %zu words, only asked for %zu\n", awords, floating?2:1);
+							fprintf(stderr, "Warning: device responded with %zu words, only asked for %d\n", awords, floating?2:1);
 						if(floating)
 						{
 							unsigned char buf[4];
@@ -416,7 +416,7 @@ void hexdump(FILE *fp, const unsigned char *data, size_t len)
 		if(!(i&7))
 		{
 			if(i) fputc('\n', fp);
-			fprintf(fp, "%04x:", i);
+			fprintf(fp, "%04zx:", i);
 		}
 		fprintf(fp, " %02x", data[i]);
 	}

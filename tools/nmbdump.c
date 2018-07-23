@@ -238,7 +238,7 @@ void hexdump(FILE *fp, const unsigned char *data, size_t len)
 		if(!(i&7))
 		{
 			if(i) fputc('\n', fp);
-			fprintf(fp, "%04x:", i);
+			fprintf(fp, "%04zx:", i);
 		}
 		fprintf(fp, " %02x", data[i]);
 	}
