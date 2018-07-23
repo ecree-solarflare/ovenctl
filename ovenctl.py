@@ -461,7 +461,7 @@ def parse_err_response(msgbytes): # string -> (bool, int)
     Techspec: 2.7"""
     if len(msgbytes) < 5:
         return False, None
-    crc, = struct.unpack('<h', msgbytes[3:5])
+    crc, = struct.unpack('<H', msgbytes[3:5])
     ignore, func, ecode = struct.unpack('>BBB', msgbytes[:3])
     if not func&0x80:
         return False, None
